@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Custom Autoupdate Notification Email
- * Plugin URI:  https://wa.me/2348060719978
+ * Plugin URI:  https://github.com/itksweb/wordpress-plugins
  * Description: Sends WordPress automatic update notification emails to a custom email address with customizable subject, body, sender details, and dynamic tokens. Groups multiple updates into a single email.
  * Version:     1.5
  * Author:      Kingsley Ikpefan

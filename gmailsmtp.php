@@ -1,9 +1,11 @@
 <?php
 /**
  * Plugin Name: Sharp WP Gmail SMTP
+ * Plugin URI:  https://github.com/itksweb/wordpress-plugins
  * Description: Make use of Gmail SMTP instead of the default WordPress mail system to send all outgoing emails from your website.
  * Version: 1.1.0
  * Author: Kingsley Ikpefan
+ * Author URI:  https://wa.me/2348060719978
  * License: GPL2
  */
 
