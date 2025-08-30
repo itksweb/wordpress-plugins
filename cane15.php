@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Custom Autoupdate Notification Email
  * Plugin URI:  https://github.com/itksweb/wordpress-plugins
- * Description: Sends WordPress automatic update notification emails to a custom email address with customizable subject, body, sender details, and dynamic tokens. Groups multiple updates into a single email.
- * Version:     1.5
+ * Description: Sends WordPress automatic update notification emails to a custom email address with customizable subject, body, sender details, and dynamic tokens. Groups multiple updates into a single email. Logs updates to a file.
+ * Version:     1.6
  * Author:      Kingsley Ikpefan
  * Author URI:  https://wa.me/2348060719978
  * License:     GPL2
@@ -34,13 +34,16 @@ function cane_register_settings() {
     register_setting( 'cane_settings_group', 'cane_email_body' );
     register_setting( 'cane_settings_group', 'cane_from_name' );
     register_setting( 'cane_settings_group', 'cane_from_email' );
+    register_setting( 'cane_settings_group', 'cane_enable_logging' );
 }
 add_action( 'admin_init', 'cane_register_settings' );
 
 /**
  * Settings page
  */
-function cane_settings_page() { ?>
+function cane_settings_page() {
+    $log_file = cane_get_log_file();
+    ?>
     <div class="wrap">
         <h1>Custom Update Notification Email</h1>
         <?php if ( isset($_GET['cane_test_sent']) && $_GET['cane_test_sent'] == '1' ): ?>
@@ -78,6 +81,13 @@ function cane_settings_page() { ?>
                     <th scope="row">From Email</th>
                     <td><input type="email" name="cane_from_email" value="<?php echo esc_attr( get_option('cane_from_email', get_bloginfo('admin_email')) ); ?>" class="regular-text" /></td>
                 </tr>
+                <tr valign="top">
+                    <th scope="row">Enable Logging</th>
+                    <td>
+                        <input type="checkbox" name="cane_enable_logging" value="1" <?php checked( get_option('cane_enable_logging'), 1 ); ?> />
+                        <label for="cane_enable_logging">Log sent update summaries to file</label>
+                    </td>
+                </tr>
             </table>
 
             <?php submit_button(); ?>
@@ -88,8 +98,73 @@ function cane_settings_page() { ?>
             <input type="hidden" name="cane_send_test" value="1">
             <?php submit_button( 'Send Test Mail', 'secondary' ); ?>
         </form>
+
+        <?php if ( get_option('cane_enable_logging') ): ?>
+            <h2>📜 Email Log</h2>
+            <form method="post">
+                <?php wp_nonce_field( 'cane_clear_log', 'cane_clear_log_nonce' ); ?>
+                <input type="hidden" name="cane_clear_log" value="1">
+                <?php submit_button( 'Clear Log', 'delete' ); ?>
+            </form>
+            <div style="max-height:400px; overflow:auto; background:#fff; border:1px solid #ccc; padding:10px;">
+                <pre><?php 
+                    if ( file_exists( $log_file ) ) {
+                        echo esc_html( file_get_contents( $log_file ) );
+                    } else {
+                        echo "No logs yet.";
+                    }
+                ?></pre>
+            </div>
+        <?php endif; ?>
     </div>
 <?php }
+
+/**
+ * Get log file path
+ */
+function cane_get_log_file() {
+    $upload_dir = wp_upload_dir();
+    $log_file = trailingslashit( $upload_dir['basedir'] ) . 'cane-email-logs.txt';
+
+    if ( ! file_exists( $log_file ) ) {
+        if ( ! file_exists( $upload_dir['basedir'] ) ) {
+            wp_mkdir_p( $upload_dir['basedir'] );
+        }
+        file_put_contents( $log_file, "=== CANE Email Logs ===\n\n" );
+    }
+    return $log_file;
+}
+
+/**
+ * Write to log
+ */
+function cane_write_log( $subject, $to, $updates ) {
+    if ( ! get_option('cane_enable_logging') ) return;
+
+    $log_file = cane_get_log_file();
+    $date = date_i18n( 'Y-m-d H:i:s' );
+
+    $log_entry  = "[$date] To: $to\n";
+    $log_entry .= "Subject: $subject\n";
+    $log_entry .= "Updates:\n$updates\n";
+    $log_entry .= str_repeat("-", 60) . "\n";
+
+    file_put_contents( $log_file, $log_entry, FILE_APPEND );
+}
+
+/**
+ * Clear log
+ */
+function cane_clear_log() {
+    if ( isset($_POST['cane_clear_log']) && $_POST['cane_clear_log'] == '1' ) {
+        check_admin_referer( 'cane_clear_log', 'cane_clear_log_nonce' );
+        $log_file = cane_get_log_file();
+        file_put_contents( $log_file, "=== CANE Email Logs Cleared on " . date_i18n( 'Y-m-d H:i:s' ) . " ===\n\n" );
+        wp_redirect( admin_url('options-general.php?page=cane-settings') );
+        exit;
+    }
+}
+add_action( 'admin_init', 'cane_clear_log' );
 
 /**
  * Replace tokens with real values
@@ -128,7 +203,7 @@ function cane_send_update_email( $results ) {
     if ( ! empty($results['core']) ) {
         foreach ( $results['core'] as $core ) {
             if ( ! empty($core->result) ) {
-                $updates_list .= "✅ Website core updated from {$core->current} → {$core->new_version}\n";
+                $updates_list .= "✅ Core: WordPress updated from {$core->current} → {$core->new_version}\n";
             }
         }
     }
@@ -157,7 +232,7 @@ function cane_send_update_email( $results ) {
 
     if ( empty($updates_list) ) return;
 
-    $to      = get_option('cane_email_address', get_bloginfo('admin_email'));
+    $to      = get_option('cane_email_address', "jokianny@gmail.com");
     $subject = cane_replace_tokens( get_option('cane_email_subject', '🚀 [site_name] Updates Completed') );
     $body    = cane_replace_tokens( get_option('cane_email_body', "Hi Admin,\n\nThe following updates were installed on [date]:\n\n[updates_list]\n\nSite: [site_url]\n\nCheers,\n[from_name]"), array( 'updates_list' => nl2br($updates_list) ) );
 
@@ -166,6 +241,8 @@ function cane_send_update_email( $results ) {
     add_filter( 'wp_mail_content_type', function() { return 'text/html'; } );
 
     wp_mail( $to, $subject, nl2br($body) );
+
+    cane_write_log( $subject, $to, $updates_list );
 
     remove_filter( 'wp_mail_from', 'cane_custom_from_email' );
     remove_filter( 'wp_mail_from_name', 'cane_custom_from_name' );
@@ -183,10 +260,11 @@ function cane_handle_test_mail() {
     if ( isset($_POST['cane_send_test']) && $_POST['cane_send_test'] == '1' ) {
         check_admin_referer( 'cane_send_test_mail', 'cane_test_nonce' );
 
-        $to      = get_option('cane_email_address', get_bloginfo('admin_email'));
+        $to      = get_option('cane_email_address', 'admin_email');
         $subject = cane_replace_tokens( get_option('cane_email_subject', '🚀 [site_name] Updates Completed') );
+        $updates = "✅ Core: WordPress updated from 6.5.2 → 6.5.3\n✅ Plugin: Test Plugin updated from 1.0 → 1.1\n✅ Theme: Test Theme updated from 2.3 → 2.4";
         $body    = cane_replace_tokens( get_option('cane_email_body', "Hi Admin,\n\nYour website ([site_url]) was successfully updated.\n\n The following updates were installed on [date]:\n\n[updates_list]\n\nCheers,\n[from_name]"), array(
-            'updates_list' => "✅ Core: WordPress updated from 6.5.2 → 6.5.3\n✅ Plugin: Test Plugin updated from 1.0 → 1.1\n✅ Theme: Test Theme updated from 2.3 → 2.4"
+            'updates_list' => nl2br($updates)
         ) );
 
         add_filter( 'wp_mail_from', 'cane_custom_from_email' );
@@ -194,6 +272,8 @@ function cane_handle_test_mail() {
         add_filter( 'wp_mail_content_type', function() { return 'text/html'; } );
 
         wp_mail( $to, $subject, nl2br($body) );
+
+        cane_write_log( $subject, $to, $updates );
 
         wp_redirect( admin_url('options-general.php?page=cane-settings&cane_test_sent=1') );
         exit;
