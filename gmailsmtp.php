@@ -47,7 +47,7 @@ class WPGmailSMTPMailer {
         $phpmailer->SMTPSecure = $options['encryption'] ?? 'tls';
         $phpmailer->Port       = intval( $options['port'] ?? 587 );
         $phpmailer->From       = $options['from_email'] ?? $options['gmail_address'];
-        $phpmailer->FromName   = $options['from_name'] ?? 'WordPress';
+        $phpmailer->FromName   = $options['from_name'] ?? 'Web Boss';
     }
 
     /**
