@@ -3,7 +3,7 @@
  * Plugin Name: Sharp WP Gmail SMTP
  * Plugin URI:  https://github.com/itksweb/wordpress-plugins/gmail-smtp
  * Description: Make use of Gmail SMTP instead of the default WordPress mail system to send all outgoing emails from your website.
- * Version: 1.2.0
+ * Version: 1.2.1
  * Author: Kingsley Ikpefan
  * Author URI:  https://wa.me/2348060719978
  * License: GPL2
@@ -17,7 +17,7 @@ class WPGmailSMTPMailer {
 
     private $option_name = 'wp_gmail_smtp_options';
     private $plugin_page  = 'wp-gmail-smtp';
-    private $version      = '1.2.0';
+    private $version      = '1.2.1';
 
     public function __construct() {
         // Hook to configure PHPMailer
@@ -42,7 +42,7 @@ class WPGmailSMTPMailer {
     public function configure_phpmailer( $phpmailer ) {
         $options = get_option( $this->option_name );
 
-        if ( empty( $options['gmail_address'] ) || empty( $options['gmail_password'] ) ) {
+        if ( ! is_array( $options ) || empty( $options['gmail_address'] ) || empty( $options['gmail_password'] ) ) {
             return;
         }
 
@@ -55,15 +55,17 @@ class WPGmailSMTPMailer {
         $phpmailer->Port       = intval( $options['port'] ?? 587 );
 
         // Only override From email if WordPress is using its default
+        // Get Default WP Email
         $default_wp_email = 'wordpress@' . preg_replace( '/^www\./', '', strtolower( $_SERVER['SERVER_NAME'] ?? '' ) );
-        if ( empty( $phpmailer->From ) ) {
-            // PHPMailer From may not yet be set; compare to WP default derived value
-            $current_from = $default_wp_email;
-        } else {
-            $current_from = $phpmailer->From;
-        }
 
-        if ( strtolower( $current_from ) === strtolower( $default_wp_email ) ) {
+        // Determine Current 'From'
+        $current_from = $phpmailer->From ?: $default_wp_email;
+        $current_from_name = $phpmailer->FromName ?: 'WordPress';
+
+        // Check Force Override
+        $force = ! empty( $options['force_override'] );
+
+        if ( $force || strtolower( $current_from ) === strtolower( $default_wp_email ) ) {
             if ( ! empty( $options['from_email'] ) ) {
                 $phpmailer->From = $options['from_email'];
             } else {
@@ -73,12 +75,9 @@ class WPGmailSMTPMailer {
         }
 
         // Only override FromName if WP default 'WordPress' is used
-        $current_from_name = $phpmailer->FromName ?? 'WordPress';
-        if ( strtolower( $current_from_name ) === 'wordpress' ) {
+        if ( $force || strtolower( $current_from_name ) === 'wordpress' ) {
             if ( ! empty( $options['from_name'] ) ) {
                 $phpmailer->FromName = $options['from_name'];
-            } else {
-                $phpmailer->FromName = 'WordPress';
             }
         }
     }
