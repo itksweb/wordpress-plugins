@@ -275,7 +275,6 @@ final class Modern_Gmail_SMTP {
                 <a href="?page=<?php echo $base; ?>&tab=sender" class="nav-tab <?php echo $tab === 'sender' ? 'nav-tab-active' : ''; ?>">Sender Settings</a>
                 <a href="?page=<?php echo $base; ?>&tab=connection-test" class="nav-tab <?php echo $tab === 'connection-test' ? 'nav-tab-active' : ''; ?>">SMTP Connection Test</a>
                 <a href="?page=<?php echo $base; ?>&tab=advanced" class="nav-tab <?php echo $tab === 'advanced' ? 'nav-tab-active' : ''; ?>">Advanced</a>
-                <a href="?page=<?php echo $base; ?>&tab=test-mail" class="nav-tab <?php echo $tab === 'test-email' ? 'nav-tab-active' : ''; ?>">Send Test Email</a>
             </h2>
 
             <div style="margin-top:20px;">
