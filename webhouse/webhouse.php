@@ -1,23 +1,23 @@
 <?php
 /**
- * Plugin Name: Sharp WP Gmail SMTP
- * Plugin URI:  https://github.com/itksweb/wordpress-plugins/gmail-smtp
- * Description: Make use of Gmail SMTP instead of the default WordPress mail system to send all outgoing emails from your website.
- * Version: 2.1.0
+ * Plugin Name: WebHOUSE
+ * Plugin URI:  https://github.com/itksweb/wordpress-plugins/
+ * Description: A custom plugin created to house other small plugins that help us carry out maintenance on clients website
+ * Version: 1.0.0
  * Author: Kingsley Ikpefan
  * Author URI:  https://wa.me/2348060719978
- * License: GPL2
+ * License: GPL2 or later
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly
 }
 
-class KingstarWEBHOUSEMaintenance {
+class WebHOUSEMaintenance {
 
     private $option_name = 'wp_gmail_smtp_options';
     private $plugin_page  = 'wp-gmail-smtp';
-    private $version      = '2.1.0';
+    private $version      = '1.0.0';
 
     public function __construct() {
         // Hook to configure PHPMailer
@@ -85,24 +85,25 @@ class KingstarWEBHOUSEMaintenance {
         }
     }
 
-    // Redirects the parent menu link to the first submenu item (Gmail SMTP).
-    public function redirect_parent_to_first_submenu() {
-        // We redirect the parent slug (webhouse) to the child slug (wp-gmail-smtp).
-        wp_safe_redirect( admin_url( 'admin.php?page=' . $this->plugin_page ) );
-        exit;
-    }
-
-    //Add top-level parent menu and register the plugin as a submenu.
+    /**
+     * Add top-level menu page (Menu Fix)
+     */
     public function add_settings_page() {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            return;
+        }
+
         // 1. Register the Top-Level Parent Menu: "Webhouse"
         add_menu_page(
             'Webhouse Dashboard',       // Page Title
             'WEBHOUSE',                 // Menu Title
             'manage_options',           // Capability
             'webhouse',                 // Menu Slug (The parent slug)
-            [ $this, 'redirect_parent_to_first_submenu' ],                       // Callback: Set to null if the first submenu should load by default
-            'dashicons-admin-home',     // Icon for the parent menu
-            26                          // Position
+            function() {
+                echo '<div class="wrap"><h1>Welcome to Webhouse</h1><p>Select a module from the submenu.</p></div>';
+            },                       // Callback: Set to null if the first submenu should load by default
+            'dashicons-admin-generic',     // Icon for the parent menu
+            19                          // Position
         );
 
         // 2. Register the Submenu: "Gmail SMTP"
@@ -112,17 +113,7 @@ class KingstarWEBHOUSEMaintenance {
             'Gmail SMTP',                   // Menu Title
             'manage_options',               // Capability
             $this->plugin_page,             // Menu Slug ('wp-gmail-smtp')
-            [ $this, 'render_GMail_SMTP_settings_page' ]// Callback (Your existing render function)
-        );
-
-        // 2. Register the Submenu: "Auto Update Email Notification"
-        add_submenu_page(
-            'webhouse',                     // Parent Slug (Must match the slug above)
-            'Auto Update Email Notification Settings',       // Page Title
-            'Auto Update Email Notification',                   // Menu Title
-            'manage_options',               // Capability
-            $this->plugin_page,             // Menu Slug
-            [ $this, 'render_settings_page' ]// Callback (Your existing render function)
+            [ $this, 'render_settings_page' ],// Callback (Your existing render function)
         );
     }
 
@@ -140,14 +131,11 @@ class KingstarWEBHOUSEMaintenance {
         add_settings_field( 'gmail_password', 'App Password', [ $this, 'render_password_field' ], 'wp_gmail_smtp_tab_smtp', 'wp_gmail_smtp_section_smtp', ['id' => 'gmail_password'] );
         add_settings_field( 'encryption', 'Encryption', [ $this, 'render_select_field' ], 'wp_gmail_smtp_tab_smtp', 'wp_gmail_smtp_section_smtp', ['id' => 'encryption', 'options' => ['tls' => 'TLS', 'ssl' => 'SSL']] );
         add_settings_field( 'port', 'SMTP Port', [ $this, 'render_text_field' ], 'wp_gmail_smtp_tab_smtp', 'wp_gmail_smtp_section_smtp', ['id' => 'port'] );
+         add_settings_field( 'from_email', 'From Email', [ $this, 'render_text_field' ], 'wp_gmail_smtp_tab_smtp', 'wp_gmail_smtp_section_smtp', ['id' => 'from_email'] );
+        add_settings_field( 'from_name', 'From Name', [ $this, 'render_text_field' ], 'wp_gmail_smtp_tab_smtp', 'wp_gmail_smtp_section_smtp', ['id' => 'from_name'] );
+        add_settings_field( 'force_override', 'Force Override From', [ $this, 'render_checkbox_field' ], 'wp_gmail_smtp_tab_smtp', 'wp_gmail_smtp_section_smtp', ['id' => 'force_override', 'desc' => 'Force plugin to always override From email/name.'] );       
 
-        // --- 2. Sender Section (Virtual Page: wp_gmail_smtp_tab_sender) ---
-        add_settings_section( 'wp_gmail_smtp_section_sender', 'Sender Settings', null, 'wp_gmail_smtp_tab_sender' );
-        add_settings_field( 'from_email', 'From Email', [ $this, 'render_text_field' ], 'wp_gmail_smtp_tab_sender', 'wp_gmail_smtp_section_sender', ['id' => 'from_email'] );
-        add_settings_field( 'from_name', 'From Name', [ $this, 'render_text_field' ], 'wp_gmail_smtp_tab_sender', 'wp_gmail_smtp_section_sender', ['id' => 'from_name'] );
-        add_settings_field( 'force_override', 'Force Override From', [ $this, 'render_checkbox_field' ], 'wp_gmail_smtp_tab_sender', 'wp_gmail_smtp_section_sender', ['id' => 'force_override', 'desc' => 'Force plugin to always override From email/name.'] );
-
-        // --- 3. Advanced Section (Virtual Page: wp_gmail_smtp_tab_advanced) ---
+        // --- 2. Advanced Section (Virtual Page: wp_gmail_smtp_tab_advanced) ---
         add_settings_section( 'wp_gmail_smtp_section_advanced', 'Advanced', null, 'wp_gmail_smtp_tab_advanced' );
         add_settings_field( 'debug_mode', 'Debug Mode', [ $this, 'render_checkbox_field' ], 'wp_gmail_smtp_tab_advanced', 'wp_gmail_smtp_section_advanced', ['id' => 'debug_mode', 'desc' => 'Enable PHPMailer debug output and basic logging (only for admin use).'] );
     }
@@ -155,7 +143,7 @@ class KingstarWEBHOUSEMaintenance {
     /**
      * Sanitize input (Adjusted for password field)
      */
-    public function ( $input ) {
+    public function sanitize_options( $input ) {
         $output = [];
         if ( ! is_array( $input ) ) {
             return $output;
@@ -172,7 +160,6 @@ class KingstarWEBHOUSEMaintenance {
         }
         return $output;
     }
-
 
     /**
      * Render helper functions (unchanged)
@@ -224,7 +211,7 @@ class KingstarWEBHOUSEMaintenance {
     /**
      * Render settings page with tabs and correct virtual page calling
      */
-    public function render_GMail_SMTP_settings_page() {
+    public function render_settings_page() {
         if ( ! current_user_can( 'manage_options' ) ) {
             return;
         }
@@ -233,6 +220,8 @@ class KingstarWEBHOUSEMaintenance {
 
         // Handle admin notices for test actions
         $this->render_admin_notices();
+
+        // URL Fix: Changed options-general.php to admin.php
         $base_url = admin_url( 'admin.php?page=' . $this->plugin_page );
         ?>
         <div class="wrap">
@@ -240,7 +229,6 @@ class KingstarWEBHOUSEMaintenance {
 
             <h2 class="nav-tab-wrapper">
                 <a href="<?php echo esc_url( $base_url . '&tab=smtp' ); ?>" class="nav-tab <?php echo $active_tab === 'smtp' ? 'nav-tab-active' : ''; ?>">SMTP Settings</a>
-                <a href="<?php echo esc_url( $base_url . '&tab=sender' ); ?>" class="nav-tab <?php echo $active_tab === 'sender' ? 'nav-tab-active' : ''; ?>">Sender Settings</a>
                 <a href="<?php echo esc_url( $base_url . '&tab=connection-test' ); ?>" class="nav-tab <?php echo $active_tab === 'connection-test' ? 'nav-tab-active' : ''; ?>">SMTP Connection Test</a>
                 <a href="<?php echo esc_url( $base_url . '&tab=advanced' ); ?>" class="nav-tab <?php echo $active_tab === 'advanced' ? 'nav-tab-active' : ''; ?>">Advanced</a>
                 <a href="<?php echo esc_url( $base_url . '&tab=test-email' ); ?>" class="nav-tab <?php echo $active_tab === 'test-email' ? 'nav-tab-active' : ''; ?>">Send Test Email</a>
@@ -254,16 +242,6 @@ class KingstarWEBHOUSEMaintenance {
                         settings_fields( 'wp_gmail_smtp_group' );
                         // Call the VIRTUAL page slug for SMTP
                         do_settings_sections( 'wp_gmail_smtp_tab_smtp' );
-                        submit_button();
-                        ?>
-                    </form>
-
-                <?php elseif ( $active_tab === 'sender' ) : ?>
-                    <form method="post" action="options.php">
-                        <?php
-                        settings_fields( 'wp_gmail_smtp_group' );
-                        // Call the VIRTUAL page slug for Sender
-                        do_settings_sections( 'wp_gmail_smtp_tab_sender' );
                         submit_button();
                         ?>
                         <p class="description">If <strong>Force Override From</strong> is unchecked, the plugin will only override From Email/Name when WordPress is using its defaults (wordpress@yourdomain.com / WordPress).</p>
@@ -477,4 +455,4 @@ class KingstarWEBHOUSEMaintenance {
     }
 }
 
-new KingstarWEBHOUSEMaintenance();
+new WebHOUSEMaintenance();

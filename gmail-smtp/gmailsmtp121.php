@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: Sharp WP Gmail SMTP
- * Plugin URI:  https://github.com/itksweb/wordpress-plugins/gmail-smtp
+ * Plugin URI:  https://github.com/itksweb/wordpress-plugins/gmail-smtp
  * Description: Make use of Gmail SMTP instead of the default WordPress mail system to send all outgoing emails from your website.
- * Version: 1.2.1
+ * Version: 1.2.2
  * Author: Kingsley Ikpefan
- * Author URI:  https://wa.me/2348060719978
+ * Author URI:  https://wa.me/2348060719978
  * License: GPL2
  */
 
@@ -17,13 +17,13 @@ class WPGmailSMTPMailer {
 
     private $option_name = 'wp_gmail_smtp_options';
     private $plugin_page  = 'wp-gmail-smtp';
-    private $version      = '1.2.1';
+    private $version      = '1.2.2';
 
     public function __construct() {
         // Hook to configure PHPMailer
         add_action( 'phpmailer_init', [ $this, 'configure_phpmailer' ] );
 
-        // Admin menu
+        // Admin menu (Top-Level Menu)
         add_action( 'admin_menu', [ $this, 'add_settings_page' ] );
 
         // Register settings
@@ -42,6 +42,7 @@ class WPGmailSMTPMailer {
     public function configure_phpmailer( $phpmailer ) {
         $options = get_option( $this->option_name );
 
+        // Added safety check for option existence and credentials
         if ( ! is_array( $options ) || empty( $options['gmail_address'] ) || empty( $options['gmail_password'] ) ) {
             return;
         }
@@ -54,17 +55,17 @@ class WPGmailSMTPMailer {
         $phpmailer->SMTPSecure = $options['encryption'] ?? 'tls';
         $phpmailer->Port       = intval( $options['port'] ?? 587 );
 
-        // Only override From email if WordPress is using its default
-        // Get Default WP Email
+        // Get default WP email derived value
         $default_wp_email = 'wordpress@' . preg_replace( '/^www\./', '', strtolower( $_SERVER['SERVER_NAME'] ?? '' ) );
 
-        // Determine Current 'From'
+        // Determine current From and FromName
         $current_from = $phpmailer->From ?: $default_wp_email;
         $current_from_name = $phpmailer->FromName ?: 'WordPress';
 
-        // Check Force Override
+        // Check Force Override setting (Logic Fix)
         $force = ! empty( $options['force_override'] );
 
+        // Override From Email if forced or if WordPress is using its default
         if ( $force || strtolower( $current_from ) === strtolower( $default_wp_email ) ) {
             if ( ! empty( $options['from_email'] ) ) {
                 $phpmailer->From = $options['from_email'];
@@ -74,29 +75,50 @@ class WPGmailSMTPMailer {
             }
         }
 
-        // Only override FromName if WP default 'WordPress' is used
+        // Override From Name if forced or if WordPress is using its default
         if ( $force || strtolower( $current_from_name ) === 'wordpress' ) {
             if ( ! empty( $options['from_name'] ) ) {
                 $phpmailer->FromName = $options['from_name'];
+            } else {
+                $phpmailer->FromName = 'WordPress';
             }
         }
     }
 
     /**
-     * Add settings page under Settings menu
+     * Add top-level menu page (Menu Fix)
      */
     public function add_settings_page() {
-        add_options_page(
-            'WP Gmail SMTP Settings',
-            'WP Gmail SMTP',
-            'manage_options',
-            $this->plugin_page,
-            [ $this, 'render_settings_page' ]
+        if ( ! current_user_can( 'manage_options' ) ) {
+            return;
+        }
+
+        // 1. Register the Top-Level Parent Menu: "Webhouse"
+        add_menu_page(
+            'Webhouse Dashboard',       // Page Title
+            'WEBHOUSE',                 // Menu Title
+            'manage_options',           // Capability
+            'webhouse',                 // Menu Slug (The parent slug)
+            function() {
+                echo '<div class="wrap"><h1>Welcome to Webhouse</h1><p>Select a module from the submenu.</p></div>';
+            },                       // Callback: Set to null if the first submenu should load by default
+            'dashicons-admin-generic',     // Icon for the parent menu
+            19                          // Position
+        );
+
+        // 2. Register the Submenu: "Gmail SMTP"
+        add_submenu_page(
+            'webhouse',                     // Parent Slug (Must match the slug above)
+            'WP Gmail SMTP Settings',       // Page Title
+            'Gmail SMTP',                   // Menu Title
+            'manage_options',               // Capability
+            $this->plugin_page,             // Menu Slug ('wp-gmail-smtp')
+            [ $this, 'render_settings_page' ],// Callback (Your existing render function)
         );
     }
 
     /**
-     * Register plugin settings
+     * Register plugin settings using "Virtual Page" slugs for tabs (Tab Fix)
      */
     public function register_settings() {
         register_setting( 'wp_gmail_smtp_group', $this->option_name, [
@@ -104,45 +126,22 @@ class WPGmailSMTPMailer {
         ] );
 
         // --- 1. SMTP Section (Virtual Page: wp_gmail_smtp_tab_smtp) ---
-        add_settings_section( 
-            'wp_gmail_smtp_section_smtp', 
-            'SMTP Settings', 
-            null, 
-            'wp_gmail_smtp_tab_smtp' // <--- CHANGED: Unique ID for this tab
-        );
-
+        add_settings_section( 'wp_gmail_smtp_section_smtp', 'SMTP Settings', null, 'wp_gmail_smtp_tab_smtp' );
         add_settings_field( 'gmail_address', 'Gmail Address', [ $this, 'render_text_field' ], 'wp_gmail_smtp_tab_smtp', 'wp_gmail_smtp_section_smtp', ['id' => 'gmail_address'] );
         add_settings_field( 'gmail_password', 'App Password', [ $this, 'render_password_field' ], 'wp_gmail_smtp_tab_smtp', 'wp_gmail_smtp_section_smtp', ['id' => 'gmail_password'] );
         add_settings_field( 'encryption', 'Encryption', [ $this, 'render_select_field' ], 'wp_gmail_smtp_tab_smtp', 'wp_gmail_smtp_section_smtp', ['id' => 'encryption', 'options' => ['tls' => 'TLS', 'ssl' => 'SSL']] );
         add_settings_field( 'port', 'SMTP Port', [ $this, 'render_text_field' ], 'wp_gmail_smtp_tab_smtp', 'wp_gmail_smtp_section_smtp', ['id' => 'port'] );
+         add_settings_field( 'from_email', 'From Email', [ $this, 'render_text_field' ], 'wp_gmail_smtp_tab_smtp', 'wp_gmail_smtp_section_smtp', ['id' => 'from_email'] );
+        add_settings_field( 'from_name', 'From Name', [ $this, 'render_text_field' ], 'wp_gmail_smtp_tab_smtp', 'wp_gmail_smtp_section_smtp', ['id' => 'from_name'] );
+        add_settings_field( 'force_override', 'Force Override From', [ $this, 'render_checkbox_field' ], 'wp_gmail_smtp_tab_smtp', 'wp_gmail_smtp_section_smtp', ['id' => 'force_override', 'desc' => 'Force plugin to always override From email/name.'] );       
 
-
-        // --- 2. Sender Section (Virtual Page: wp_gmail_smtp_tab_sender) ---
-        add_settings_section( 
-            'wp_gmail_smtp_section_sender', 
-            'Sender Settings', 
-            null, 
-            'wp_gmail_smtp_tab_sender' // <--- CHANGED: Unique ID for this tab
-        );
-
-        add_settings_field( 'from_email', 'From Email', [ $this, 'render_text_field' ], 'wp_gmail_smtp_tab_sender', 'wp_gmail_smtp_section_sender', ['id' => 'from_email'] );
-        add_settings_field( 'from_name', 'From Name', [ $this, 'render_text_field' ], 'wp_gmail_smtp_tab_sender', 'wp_gmail_smtp_section_sender', ['id' => 'from_name'] );
-        add_settings_field( 'force_override', 'Force Override From', [ $this, 'render_checkbox_field' ], 'wp_gmail_smtp_tab_sender', 'wp_gmail_smtp_section_sender', ['id' => 'force_override', 'desc' => 'Force plugin to always override From email/name.'] );
-
-
-        // --- 3. Advanced Section (Virtual Page: wp_gmail_smtp_tab_advanced) ---
-        add_settings_section( 
-            'wp_gmail_smtp_section_advanced', 
-            'Advanced', 
-            null, 
-            'wp_gmail_smtp_tab_advanced' // <--- CHANGED: Unique ID for this tab
-        );
-
-        add_settings_field( 'debug_mode', 'Debug Mode', [ $this, 'render_checkbox_field' ], 'wp_gmail_smtp_tab_advanced', 'wp_gmail_smtp_section_advanced', ['id' => 'debug_mode', 'desc' => 'Enable PHPMailer debug output.'] );
+        // --- 2. Advanced Section (Virtual Page: wp_gmail_smtp_tab_advanced) ---
+        add_settings_section( 'wp_gmail_smtp_section_advanced', 'Advanced', null, 'wp_gmail_smtp_tab_advanced' );
+        add_settings_field( 'debug_mode', 'Debug Mode', [ $this, 'render_checkbox_field' ], 'wp_gmail_smtp_tab_advanced', 'wp_gmail_smtp_section_advanced', ['id' => 'debug_mode', 'desc' => 'Enable PHPMailer debug output and basic logging (only for admin use).'] );
     }
 
     /**
-     * Sanitize input
+     * Sanitize input (Adjusted for password field)
      */
     public function sanitize_options( $input ) {
         $output = [];
@@ -152,6 +151,9 @@ class WPGmailSMTPMailer {
         foreach ( $input as $key => $value ) {
             if ( in_array( $key, ['force_override', 'debug_mode'], true ) ) {
                 $output[$key] = ! empty( $value ) ? 1 : 0;
+            } elseif ( $key === 'gmail_password' ) {
+                // Use sanitize_textarea_field to avoid stripping characters that might be valid in an App Password
+                $output[$key] = sanitize_textarea_field( $value );
             } else {
                 $output[$key] = sanitize_text_field( $value );
             }
@@ -160,7 +162,7 @@ class WPGmailSMTPMailer {
     }
 
     /**
-     * Render text input field
+     * Render helper functions (unchanged)
      */
     public function render_text_field( $args ) {
         $options = get_option( $this->option_name );
@@ -172,9 +174,6 @@ class WPGmailSMTPMailer {
         }
     }
 
-    /**
-     * Render password input field
-     */
     public function render_password_field( $args ) {
         $options = get_option( $this->option_name );
         $id = esc_attr( $args['id'] );
@@ -185,9 +184,6 @@ class WPGmailSMTPMailer {
         }
     }
 
-    /**
-     * Render select field
-     */
     public function render_select_field( $args ) {
         $options = get_option( $this->option_name );
         $id = esc_attr( $args['id'] );
@@ -204,9 +200,6 @@ class WPGmailSMTPMailer {
         }
     }
 
-    /**
-     * Render checkbox field
-     */
     public function render_checkbox_field( $args ) {
         $options = get_option( $this->option_name );
         $id = esc_attr( $args['id'] );
@@ -216,7 +209,7 @@ class WPGmailSMTPMailer {
     }
 
     /**
-     * Render settings page with tabs
+     * Render settings page with tabs and correct virtual page calling
      */
     public function render_settings_page() {
         if ( ! current_user_can( 'manage_options' ) ) {
@@ -224,49 +217,34 @@ class WPGmailSMTPMailer {
         }
 
         $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'smtp';
-        
+
         // Handle admin notices for test actions
         $this->render_admin_notices();
 
-        $base_url = admin_url( 'options-general.php?page=' . $this->plugin_page );
+        // URL Fix: Changed options-general.php to admin.php
+        $base_url = admin_url( 'admin.php?page=' . $this->plugin_page );
         ?>
         <div class="wrap">
             <h1>WP Gmail SMTP Settings <small style="font-size:12px">v<?php echo esc_html( $this->version ); ?></small></h1>
 
             <h2 class="nav-tab-wrapper">
                 <a href="<?php echo esc_url( $base_url . '&tab=smtp' ); ?>" class="nav-tab <?php echo $active_tab === 'smtp' ? 'nav-tab-active' : ''; ?>">SMTP Settings</a>
-                <a href="<?php echo esc_url( $base_url . '&tab=sender' ); ?>" class="nav-tab <?php echo $active_tab === 'sender' ? 'nav-tab-active' : ''; ?>">Sender Settings</a>
-                <a href="<?php echo esc_url( $base_url . '&tab=test-email' ); ?>" class="nav-tab <?php echo $active_tab === 'test-email' ? 'nav-tab-active' : ''; ?>">Send Test Email</a>
                 <a href="<?php echo esc_url( $base_url . '&tab=connection-test' ); ?>" class="nav-tab <?php echo $active_tab === 'connection-test' ? 'nav-tab-active' : ''; ?>">SMTP Connection Test</a>
                 <a href="<?php echo esc_url( $base_url . '&tab=advanced' ); ?>" class="nav-tab <?php echo $active_tab === 'advanced' ? 'nav-tab-active' : ''; ?>">Advanced</a>
+                <a href="<?php echo esc_url( $base_url . '&tab=test-email' ); ?>" class="nav-tab <?php echo $active_tab === 'test-email' ? 'nav-tab-active' : ''; ?>">Send Test Email</a>
             </h2>
 
             <div style="margin-top:20px;">
-                
+
                 <?php if ( $active_tab === 'smtp' ) : ?>
                     <form method="post" action="options.php">
                         <?php
-                        // Keep the group name the same (security fields)
                         settings_fields( 'wp_gmail_smtp_group' );
-                        
                         // Call the VIRTUAL page slug for SMTP
                         do_settings_sections( 'wp_gmail_smtp_tab_smtp' );
-                        
                         submit_button();
                         ?>
-                    </form>
-
-                <?php elseif ( $active_tab === 'sender' ) : ?>
-                    <form method="post" action="options.php">
-                        <?php
-                        settings_fields( 'wp_gmail_smtp_group' );
-                        
-                        // Call the VIRTUAL page slug for Sender
-                        do_settings_sections( 'wp_gmail_smtp_tab_sender' );
-                        
-                        submit_button();
-                        ?>
-                        <p class="description">If <strong>Force Override From</strong> is unchecked, the plugin will only override From Email/Name when WordPress is using its defaults.</p>
+                        <p class="description">If <strong>Force Override From</strong> is unchecked, the plugin will only override From Email/Name when WordPress is using its defaults (wordpress@yourdomain.com / WordPress).</p>
                     </form>
 
                 <?php elseif ( $active_tab === 'test-email' ) : ?>
@@ -290,9 +268,11 @@ class WPGmailSMTPMailer {
                 <?php elseif ( $active_tab === 'connection-test' ) : ?>
                     <h2>SMTP Connection Test</h2>
                     <p>This test attempts to connect and authenticate to Gmail SMTP using your saved settings. <strong>No email will be sent.</strong></p>
+
                     <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
                         <?php wp_nonce_field( 'wp_gmail_smtp_conn_test_nonce', 'wp_gmail_smtp_conn_test_nonce_field' ); ?>
                         <input type="hidden" name="action" value="wp_gmail_smtp_connection_test">
+
                         <?php submit_button( 'Run SMTP Connection Test', 'primary', 'run_smtp_test' ); ?>
                     </form>
 
@@ -300,25 +280,22 @@ class WPGmailSMTPMailer {
                     <form method="post" action="options.php">
                         <?php
                         settings_fields( 'wp_gmail_smtp_group' );
-                        
                         // Call the VIRTUAL page slug for Advanced
                         do_settings_sections( 'wp_gmail_smtp_tab_advanced' );
-                        
                         submit_button();
                         ?>
                         <hr>
                         <h3>Reset plugin settings</h3>
-                        <p>If you want to reset plugin settings to default, delete the option <code><?php echo esc_html( $this->option_name ); ?></code> from the database.</p>
+                        <p>If you want to reset plugin settings to default, delete the option <code><?php echo esc_html( $this->option_name ); ?></code> from the database or use WP CLI.</p>
                     </form>
                 <?php endif; ?>
-
             </div>
         </div>
         <?php
     }
 
     /**
-     * Render admin notices based on URL flags (for test results)
+     * Render admin notices based on URL flags (unchanged)
      */
     private function render_admin_notices() {
         if ( isset( $_GET['test_email'] ) && $_GET['test_email'] === 'success' ) {
@@ -344,7 +321,7 @@ class WPGmailSMTPMailer {
     }
 
     /**
-     * Send test email (same behavior as before)
+     * Send test email (Updated Redirect URL)
      */
     public function send_test_email() {
         if ( ! current_user_can( 'manage_options' ) || ! isset( $_POST['wp_gmail_smtp_test_nonce_field'] ) || ! wp_verify_nonce( $_POST['wp_gmail_smtp_test_nonce_field'], 'wp_gmail_smtp_test_nonce' ) ) {
@@ -353,7 +330,8 @@ class WPGmailSMTPMailer {
 
         $to = sanitize_email( $_POST['test_email_to'] ?? '' );
         if ( empty( $to ) || ! is_email( $to ) ) {
-            wp_redirect( admin_url( 'options-general.php?page=' . $this->plugin_page . '&tab=test-email&test_email=fail' ) );
+            // URL Fix: Changed options-general.php to admin.php
+            wp_redirect( admin_url( 'admin.php?page=' . $this->plugin_page . '&tab=test-email&test_email=fail' ) );
             exit;
         }
 
@@ -363,15 +341,17 @@ class WPGmailSMTPMailer {
         $sent = wp_mail( $to, $subject, $message );
 
         if ( $sent ) {
-            wp_redirect( admin_url( 'options-general.php?page=' . $this->plugin_page . '&tab=test-email&test_email=success' ) );
+            // URL Fix: Changed options-general.php to admin.php
+            wp_redirect( admin_url( 'admin.php?page=' . $this->plugin_page . '&tab=test-email&test_email=success' ) );
         } else {
-            wp_redirect( admin_url( 'options-general.php?page=' . $this->plugin_page . '&tab=test-email&test_email=fail' ) );
+            // URL Fix: Changed options-general.php to admin.php
+            wp_redirect( admin_url( 'admin.php?page=' . $this->plugin_page . '&tab=test-email&test_email=fail' ) );
         }
         exit;
     }
 
     /**
-     * Test SMTP connection & authentication without sending an email
+     * Test SMTP connection & authentication without sending an email (Updated Redirect URL)
      */
     public function test_smtp_connection() {
         if ( ! current_user_can( 'manage_options' ) || ! isset( $_POST['wp_gmail_smtp_conn_test_nonce_field'] ) || ! wp_verify_nonce( $_POST['wp_gmail_smtp_conn_test_nonce_field'], 'wp_gmail_smtp_conn_test_nonce' ) ) {
@@ -421,7 +401,7 @@ class WPGmailSMTPMailer {
 
             // If debug mode requested in plugin settings, set debug level
             if ( ! empty( $options['debug_mode'] ) ) {
-                $mail->SMTPDebug = 2; // verboser (output suppressed, but kept for potential future use)
+                $mail->SMTPDebug = 2;
             }
 
             // Attempt to connect to the SMTP server (does not send mail)
@@ -460,10 +440,11 @@ class WPGmailSMTPMailer {
     }
 
     /**
-     * Helper: redirect back to settings with encoded result
+     * Helper: redirect back to settings with encoded result (Updated Base URL)
      */
     private function redirect_with_smtp_result( $status, $message = '' ) {
-        $base = admin_url( 'options-general.php?page=' . $this->plugin_page . '&tab=connection-test' );
+        // URL Fix: Changed options-general.php to admin.php
+        $base = admin_url( 'admin.php?page=' . $this->plugin_page . '&tab=connection-test' );
         if ( ! empty( $message ) ) {
             $encoded = rawurlencode( base64_encode( $message ) );
             wp_redirect( $base . "&smtp_test={$status}&smtp_msg={$encoded}" );
