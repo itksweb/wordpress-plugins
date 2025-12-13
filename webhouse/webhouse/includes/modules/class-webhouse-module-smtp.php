@@ -264,7 +264,7 @@ class WebHOUSE_Module_SMTP {
         ?>
         <div class="wrap">
             <h1><?php esc_html_e( 'WebHOUSE Gmail SMTP Settings', 'webhouse' ); ?> <small style="font-size:12px">v1.0.3</small></h1>
-
+            <?php settings_errors(); ?>
             <h2 class="nav-tab-wrapper">
                 <a href="<?php echo esc_url( $base_url . '&tab=smtp' ); ?>" class="nav-tab <?php echo $active_tab === 'smtp' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'SMTP Credentials', 'webhouse' ); ?></a>
                 <a href="<?php echo esc_url( $base_url . '&tab=connection-test' ); ?>" class="nav-tab <?php echo $active_tab === 'connection-test' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e( 'SMTP Connection Test', 'webhouse' ); ?></a>

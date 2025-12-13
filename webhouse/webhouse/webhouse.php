@@ -3,7 +3,7 @@
  * Plugin Name: WebHOUSE
  * Plugin URI:  https://github.com/itksweb/wordpress-plugins/
  * Description: A custom plugin created to house other small plugins that help us carry out maintenance on clients website
- * Version: 1.3.0
+ * Version: 1.4.2
  * Author: Kingsley Ikpefan
  * Author URI:  https://wa.me/2348060719978
  * License: GPL2 or later

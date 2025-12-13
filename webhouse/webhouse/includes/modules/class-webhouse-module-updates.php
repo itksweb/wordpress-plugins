@@ -109,7 +109,7 @@ class WebHOUSE_Module_Updates {
         ?>
         <div class="wrap">
             <h1><?php esc_html_e( 'WebHOUSE Auto Update Email Settings', 'webhouse' ); ?></h1>
-
+            <?php settings_errors(); ?>
             <p class="description"><?php esc_html_e( 'Use these settings to customize the recipient, subject, and sender information for the automated emails WordPress sends after core, plugin, or theme auto-updates.', 'webhouse' ); ?></p>
             <hr>
 

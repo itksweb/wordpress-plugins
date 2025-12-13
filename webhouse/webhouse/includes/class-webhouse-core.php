@@ -35,6 +35,8 @@ class WebHOUSE_Core {
         // Load module files
         require_once WEBHOUSE_PLUGIN_DIR . 'includes/modules/class-webhouse-module-smtp.php';
         require_once WEBHOUSE_PLUGIN_DIR . 'includes/modules/class-webhouse-module-updates.php';
+        require_once WEBHOUSE_PLUGIN_DIR . 'includes/modules/class-webhouse-module-heartbeat.php';
+        require_once WEBHOUSE_PLUGIN_DIR . 'includes/modules/class-webhouse-module-disable-comments.php';
         
         // Instantiate modules and pass the core's parent slug
         
@@ -46,6 +48,16 @@ class WebHOUSE_Core {
         // 2. Auto-Update Email Customization Module
         if ( class_exists( 'WebHOUSE_Module_Updates' ) ) {
             $this->modules['updates'] = new WebHOUSE_Module_Updates( self::PARENT_SLUG );
+        }
+
+        // 3. Disable Comments Module
+        if ( class_exists( 'WebHOUSE_Module_Disable_Comments' ) ) {
+            $this->modules['updates'] = new WebHOUSE_Module_Disable_Comments( self::PARENT_SLUG );
+        }
+
+        // 4. Heartbeat Module
+        if ( class_exists( 'WebHOUSE_Module_Heartbeat' ) ) {
+            $this->modules['updates'] = new WebHOUSE_Module_Heartbeat( self::PARENT_SLUG );
         }
     }
 
@@ -83,10 +95,24 @@ class WebHOUSE_Core {
             ],
             [
                 'title' => __( 'Auto Update Emails', 'webhouse' ),
-                'description' => __( 'Customize recipient, sender, and subject for all WordPress core, plugin, and theme update notifications.', 'webhouse' ),
+                'description' => __( 'Customize recipient, sender, and subject for WordPress core, plugin, and theme update notifications.', 'webhouse' ),
                 'icon' => 'dashicons-update',
                 'link_slug' => 'webhouse-update-settings',
-                'link_text' => __( 'Customize Emails', 'webhouse' ),
+                'link_text' => __( 'Let\'s Do It', 'webhouse' ),
+            ],
+            [
+                'title' => __( 'Disable Comments', 'webhouse' ),
+                'description' => __( 'Disable comments for selected post types.', 'webhouse' ),
+                'icon' => 'dashicons-lock',
+                'link_slug' => 'webhouse-disable-comments-settings',
+                'link_text' => __( 'Let\'s Do It', 'webhouse' ),
+            ],
+            [
+                'title' => __( 'Heartbeat Control', 'webhouse' ),
+                'description' => __( 'Optimize performance by reducing the frequency of the WordPress Heartbeat API, which can save server resources.', 'webhouse' ),
+                'icon' => 'dashicons-heart',
+                'link_slug' => 'webhouse-heartbeat-settings',
+                'link_text' => __( 'Let\'s Do It', 'webhouse' ),
             ],
             // Add other modules here
         ];
@@ -95,6 +121,7 @@ class WebHOUSE_Core {
         <div class="wrap webhouse-dashboard">
             <h1><?php esc_html_e( 'WebHOUSE Dashboard', 'webhouse' ); ?></h1>
             <p class="description"><?php esc_html_e( 'Manage and configure your WebHOUSE utility modules below.', 'webhouse' ); ?></p>
+            <?php settings_errors(); // Displays all success/error notices ?>
 
             <style>
                 .webhouse-cards-grid {
