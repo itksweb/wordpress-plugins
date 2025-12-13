@@ -37,6 +37,7 @@ class WebHOUSE_Core {
         require_once WEBHOUSE_PLUGIN_DIR . 'includes/modules/class-webhouse-module-updates.php';
         require_once WEBHOUSE_PLUGIN_DIR . 'includes/modules/class-webhouse-module-heartbeat.php';
         require_once WEBHOUSE_PLUGIN_DIR . 'includes/modules/class-webhouse-module-disable-comments.php';
+        require_once WEBHOUSE_PLUGIN_DIR . 'includes/modules/class-webhouse-module-login-redirect.php';
         
         // Instantiate modules and pass the core's parent slug
         
@@ -58,6 +59,11 @@ class WebHOUSE_Core {
         // 4. Heartbeat Module
         if ( class_exists( 'WebHOUSE_Module_Heartbeat' ) ) {
             $this->modules['updates'] = new WebHOUSE_Module_Heartbeat( self::PARENT_SLUG );
+        }
+
+        // 5. Login Redirect Module
+        if ( class_exists( 'WebHOUSE_Module_Login_Redirect' ) ) {
+            $this->modules['updates'] = new WebHOUSE_Module_Login_Redirect( self::PARENT_SLUG );
         }
     }
 
@@ -98,6 +104,13 @@ class WebHOUSE_Core {
                 'description' => __( 'Customize recipient, sender, and subject for WordPress core, plugin, and theme update notifications.', 'webhouse' ),
                 'icon' => 'dashicons-update',
                 'link_slug' => 'webhouse-update-settings',
+                'link_text' => __( 'Let\'s Do It', 'webhouse' ),
+            ],
+            [
+                'title' => __( 'Redirect Users', 'webhouse' ),
+                'description' => __( 'Redirect users to specific pages when they login successfully.', 'webhouse' ),
+                'icon' => 'dashicons-lock',
+                'link_slug' => 'webhouse-login-redirect-settings',
                 'link_text' => __( 'Let\'s Do It', 'webhouse' ),
             ],
             [
