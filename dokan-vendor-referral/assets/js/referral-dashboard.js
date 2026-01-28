@@ -1,5 +1,26 @@
 let activeLink = document.getElementById('active-ref-link').value;
 
+function showToast(message, isError = false) {
+    const toast = document.getElementById('bk-toast');
+    const msgEl = document.getElementById('toast-msg');
+    
+    // Update Content
+    msgEl.innerText = message;
+    toast.style.background = isError ? "#ff4d4f" : "#1a1a1a";
+    
+    const icon = toast.querySelector('i');
+    icon.className = isError ? "fas fa-exclamation-circle" : "fas fa-check-circle";
+    icon.style.color = isError ? "#fff" : "#25D366";
+    
+    // Animate In: Keeping the X centering while moving Y
+    toast.style.transform = "translate(-50%, 0)";
+    
+    // Animate Out
+    setTimeout(() => { 
+        toast.style.transform = "translate(-50%, -150px)"; 
+    }, 3000);
+}
+
 function generateProductLink() {
     const inputField = document.getElementById('product-input');
     const rawUrl = inputField.value.trim();
