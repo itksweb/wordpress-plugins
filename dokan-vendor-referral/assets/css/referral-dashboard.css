@@ -1,0 +1,396 @@
+/* 1. LAYOUT & CONTAINERS */
+.bk-dashboard-wrapper {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: #333;
+}
+
+.bk-grid {
+    display: grid;
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.bk-grid-4 {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.bk-grid-2 {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+}
+
+/* 2. SHARED CARD STYLES */
+.bk-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    transition: transform 0.3s ease;
+}
+
+.bk-card:hover {
+    transform: translateY(-3px);
+}
+
+.bk-card-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 15px 0;
+    display: flex;
+    align-items: center;
+}
+
+.bk-card-title i {
+    margin-right: 10px;
+}
+
+/* 3. STATS CARDS */
+.bk-stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.bk-stat-value {
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.bk-stat-footer {
+    margin-top: 10px;
+    font-size: 11px;
+    color: #aaa;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.bk-card-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+}
+
+/* 4. INPUTS & BUTTONS */
+.bk-input-group {
+    background: #f8f9fa;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.bk-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 600;
+    outline: none;
+}
+
+.bk-btn {
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.bk-btn-dark {
+    background: #333;
+    color: #fff;
+}
+
+.bk-btn-primary {
+    background: #764ba2;
+    color: #fff;
+    width: 100%;
+    padding: 12px;
+}
+
+#bk-toast {
+    position: fixed;
+    top: 100px;
+    left: 50%;
+    transform: translate(-50%, -150px);
+    background: #333;
+    color: #fff;
+    padding: 14px 28px;
+    border-radius: 50px;
+    /* Pill shape */
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 5. TABLES */
+.bk-table-container {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.bk-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 350px;
+}
+
+.bk-table th {
+    background: #fafbfc;
+    padding: 12px 25px;
+    font-size: 11px;
+    color: #aaa;
+    text-transform: uppercase;
+    text-align: left;
+}
+
+.bk-table td {
+    padding: 15px 25px;
+    border-bottom: 1px solid #f8f9fa;
+    vertical-align: middle;
+}
+
+/* 6. SOCIAL & GUIDE */
+.bk-social-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.bk-step-icon {
+    min-width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 13px;
+}
+
+/* Link Generator Tabs */
+.bk-tabs {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.bk-tab-item {
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    padding-bottom: 5px;
+    transition: 0.3s;
+    color: #aaa;
+    user-select: none;
+}
+
+.bk-tab-item.active {
+    color: #764ba2;
+    border-bottom: 2px solid #764ba2;
+}
+
+/* Product Promo Input */
+.bk-product-input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #eee;
+    font-size: 13px;
+    margin-bottom: 10px;
+    background: #fcfcfc;
+    outline-color: #764ba2;
+}
+
+/* Sharing Icons */
+.bk-social-grid {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.bk-social-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: 0.2s;
+}
+
+.bk-social-btn:hover {
+    transform: scale(1.1);
+}
+
+.bk-social-wa {
+    background: #25D366;
+}
+
+.bk-social-fb {
+    background: #1877F2;
+}
+
+.bk-social-tw {
+    background: #000;
+}
+
+.bk-social-em {
+    background: #ea4335;
+}
+
+/*Trend container*/
+.bk-trend-container {
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    margin-bottom: 40px;
+}
+
+.trend-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.trend-body {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 150px;
+    padding: 0 10px;
+    gap: 10px;
+}
+
+.trend-day {
+    margin-top: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #aaa;
+    text-transform: uppercase;
+}
+
+.trend-bar {
+    width: 100%;
+    max-width: 40px;
+    border-radius: 6px 6px 4px 4px;
+    transition: height 0.5s ease-out;
+}
+
+.bar-parent:hover .bk-tooltip {
+    opacity: 1 !important;
+}
+
+.bk-stat-card:hover {
+    transform: translateY(-3px);
+    transition: all 0.3s ease;
+}
+
+/* Table Layout & Components */
+.bk-saas-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.bk-card-header {
+    padding: 20px 25px;
+    border-bottom: 1px solid #f8f9fa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.bk-header-label {
+    font-size: 11px;
+    color: #999;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Status Badges */
+.bk-status-pill {
+    font-size: 9px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+}
+
+.bk-status-active {
+    background: #e8faf0;
+    color: #2ecc71;
+}
+
+.bk-status-pending {
+    background: #fff1ef;
+    color: #f35d30;
+}
+
+/* Vendor Avatar Icon */
+.bk-vendor-avatar {
+    width: 32px;
+    height: 32px;
+    background: #f0f2f5;
+    color: #764ba2;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 12px;
+    margin-right: 12px;
+}
+
+/* Compact Social Buttons */
+.bk-social-grid-compact {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #eee;
+}
+
+.bk-social-btn-sm {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.bk-social-btn-sm:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}

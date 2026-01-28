@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Dokan Bespoke Vendor Referral
  * Description: Automated Vendor-to-Vendor affiliate system with Dokan Dashboard integration.
- * Version: 1.3
+ * Version: 2.0
  * Author: Kingsley Ikpefan
  * Author URI:  https://wa.me/2348060719978
  * License: GPL2 or later
@@ -24,8 +24,11 @@ class Dokan_Bespoke_Referral {
         add_filter( 'dokan_query_var_filter', array( $this, 'register_query_var' ) );
         add_filter( 'dokan_dashboard_nav_active', array( $this, 'fix_permission_and_active_state' ) );
         
-        // 3. Template Loading
-        add_action( 'dokan_load_custom_template', array( $this, 'load_template' ) );
+        //3. The Template Loader Hook
+            /**** 1. Tell Dokan to trigger our template when the URL is hit ****/
+            add_action( 'dokan_load_custom_template', array( $this, 'trigger_referral_template' ) );
+            /**** 2. Tell Dokan WHERE the file actually lives (The GPS) ****/ 
+            add_filter( 'dokan_get_template_part', array( $this, 'locate_template_in_plugin' ), 10, 3 );
         
         // 4. Endpoints & Rewrites
         add_action( 'init', array( $this, 'add_endpoint' ) );
@@ -37,6 +40,10 @@ class Dokan_Bespoke_Referral {
         // 6. Financial Integration
         add_filter( 'dokan_get_seller_balance', array( $this, 'inject_into_balance' ), 10, 2 );
         add_filter( 'dokan_get_seller_earnings', array( $this, 'inject_into_stats' ), 10, 2 );
+
+        // 7. Hook to load CSS and js
+        add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_referral_assets' ) );
+
     }
 
     public function set_cookie() {
@@ -87,11 +94,24 @@ class Dokan_Bespoke_Referral {
         return $active_menu;
     }
 
-    public function load_template( $query_vars ) {
+    /****** Professional Template Loader  *******/
+    //Part A: Trigger the loading process
+    public function trigger_referral_template( $query_vars ) {
         if ( isset( $query_vars['affiliate-center'] ) ) {
-            // Looks for referrals.php in your-theme/dokan/referrals.php
-            dokan_get_template_part( 'referrals', '', array( 'is_plugin' => false ) );
+            // We call the template. The Filter (Part B) will intercept this and point it to the plugin.
+            dokan_get_template_part( 'referrals' );
         }
+    }
+    //Part B: Intercept the path and point to your plugin folder
+    public function locate_template_in_plugin( $template, $slug, $name ) {
+        if ( $slug === 'affiliate-center' ) {
+            $plugin_path = plugin_dir_path( __FILE__ ) . 'templates/referrals.php';
+            
+            if ( file_exists( $plugin_path ) ) {
+                return $plugin_path;
+            }
+        }
+        return $template;
     }
 
     public function log_commission( $order_id ) {
@@ -130,31 +150,41 @@ class Dokan_Bespoke_Referral {
         ) );
         return (float) $total;
     }
+
+    //Enqueue js and CSS only on the Dokan Dashboard
+    public function enqueue_referral_assets() {
+        // Professional check: Only load on Dokan Dashboard pages
+        if ( function_exists( 'dokan_is_seller_dashboard' ) && get_query_var( 'affiliate-center') ) {
+
+            //1. Enqueue the Script
+            wp_enqueue_script( 
+                'bk-referral-js', 
+                plugin_dir_url( __FILE__ ) . 'assets/js/referral-dashboard.js', 
+                array(), // No dependencies
+                '1.0.0', 
+                true // Load in footer for better performance
+            );
+
+            // 2. Localize (The Bridge)
+            wp_localize_script( 'bk-referral-js', 'bk_vars', array(
+                'vendorRefId' => get_current_user_id(),
+                'siteDomain'  => $_SERVER['HTTP_HOST'],
+                'ajax_url'    => admin_url( 'admin-ajax.php' ) // Future proofing for AJAX
+            ) );
+            
+            wp_enqueue_style( 
+                'bk-referral-style', 
+                plugin_dir_url( __FILE__ ) . 'assets/css/referral-dashboard.css', 
+                array(), 
+                '1.0.0', 
+                'all' 
+            );
+            
+            // Also ensure FontAwesome is available for your icons
+            wp_enqueue_style( 'font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css' );
+        }
+    }
+
 }
-
-/**
- * TEMPORARY: Wipe all referral data for a clean start
- * Refresh your dashboard ONCE after adding this, then DELETE it.
- */
-// add_action( 'init', function() {
-//     if ( ! current_user_can( 'manage_options' ) ) return;
-
-//     global $wpdb;
-
-//     // 1. Clear the "Who referred whom" connections
-//     $wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE meta_key = 'referred_by_vendor'" );
-
-//     // 2. Clear the "Lifetime Earnings" cache field
-//     $wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE meta_key = 'affiliate_total_earnings'" );
-
-//     // 3. Clear the commission logs from all Orders
-//     $wpdb->query( "DELETE FROM {$wpdb->postmeta} WHERE meta_key IN ('_referral_commission_amount', '_referral_commission_recipient', '_referral_paid_to')" );
-
-//     // 4. Clear the referral cookie from your current browser
-//     setcookie('dokan_affiliate_id', '', time() - 3600, "/");
-    
-//     // Optional: Log to error log so you know it worked
-//     error_log('Dokan Referral System: Database Cleared.');
-// });
 
 new Dokan_Bespoke_Referral();
