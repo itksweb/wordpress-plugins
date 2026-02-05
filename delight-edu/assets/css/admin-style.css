@@ -1,0 +1,529 @@
+/*
+=======================================
+          TOAST NOTIFICATION 
+=======================================
+*/
+.dedu-toast {
+  position: fixed;
+  top: 60px;
+  right: 20px;
+  padding: 15px 25px;
+  background: #2c3338;
+  color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transform: translateX(120%);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.dedu-toast.show {
+  transform: translateX(0);
+}
+.dedu-toast-success {
+  border-left: 5px solid #46b450;
+}
+.dedu-toast-icon {
+  color: #46b450;
+  font-size: 20px;
+}
+/*
+=======================================
+                BUTTONS 
+=======================================
+*/
+.dedu-btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dedu-btn-primary {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.dedu-btn-primary:hover {
+  background: #1d4ed8;
+}
+.dedu-btn-secondary {
+  background: #fff;
+  border: 1px solid #cbd5e1 !important;
+  color: #475569 !important;
+}
+
+.dedu-btn-secondary:hover {
+  background: #f1f5f9;
+}
+.dedu-btn-apply {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-left: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dedu-btn-apply:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+/*
+======================================
+               LAYOUT 
+======================================
+*/
+.dedu-admin-wrapper {
+  margin-top: 20px;
+  max-width: 1000px;
+}
+
+.dedu-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.dedu-page-title {
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  color: #0f172a;
+  margin: 0 !important;
+}
+
+.dedu-page-subtitle {
+  color: #64748b;
+  margin: 5px 0 0 0;
+}
+.dedu-card {
+  background: #ffffff;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #e2e8f0;
+}
+.dedu-carded {
+  padding: 24px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.dedu-card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/*
+====================================
+          PERMISSIONS GRID 
+====================================
+*/
+.dedu-permissions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.dedu-permission-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 15px;
+}
+
+.dedu-group-label {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #334155;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.dedu-cap-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dedu-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #475569;
+}
+
+.dedu-checkbox-label:hover .dedu-checkbox-text {
+  color: #2563eb;
+}
+
+/* --- Helper Text --- */
+.dedu-field-help {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 5px;
+}
+
+/*
+====================================
+            FORMS & INPUTS 
+====================================
+*/
+.dedu-form-group {
+  margin-bottom: 20px;
+}
+
+.dedu-label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #475569;
+}
+
+.dedu-input,
+.dedu-select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.dedu-input:focus {
+  border-color: #3b82f6;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* --- Search Input Style --- */
+
+.dedu-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.dedu-search-wrapper .dashicons {
+  position: absolute;
+  left: 10px;
+  color: #94a3b8; /* Soft slate gray */
+  font-size: 18px;
+}
+
+.dedu-search-input {
+  padding: 5px 12px 5px 35px !important; /* Extra padding on the left for the icon */
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 250px;
+  transition: all 0.2s ease;
+}
+
+.dedu-search-input:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  outline: none;
+}
+
+/* Styling for disabled controls */
+input:disabled,
+select:disabled,
+button:disabled {
+  cursor: not-allowed;
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #94a3b8 !important;
+  opacity: 0.7;
+}
+
+/* Optional: Fade the toolbar label when disabled */
+.controls-disabled label {
+  color: #cbd5e1;
+}
+
+/*
+======================================
+                TABLES 
+======================================
+*/
+.dedu-table-container {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+.dedu-table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+/* Action Dropdown Button Placeholder */
+.dedu-dropdown-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* --- Table Core layout --- */
+
+.dedu-table-container {
+  overflow-x: auto;
+  position: relative;
+  max-width: 100%;
+}
+.dedu-table-modern {
+  width: 100%;
+  text-align: left;
+  font-size: 0.875rem;
+  border-collapse: collapse;
+  min-width: 400px;
+}
+
+.dedu-table-modern thead {
+  background-color: #f9fafb;
+  color: #374151;
+  text-transform: capitalize;
+}
+.dedu-table-modern tr {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: middle;
+}
+
+.dedu-table-modern tr:hover {
+  background-color: #f3f4f6;
+}
+.dedu-table-modern th {
+  background-color: #f9fafb;
+  padding: 12px 16px;
+  font-weight: 600;
+  color: #4b5563;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+.dedu-table-modern td {
+  padding: 12px 16px;
+}
+.dedu-table-modern tr:last-child td {
+  border-bottom: none;
+}
+
+/* table checkbox */
+td.col-cb {
+  width: 20px;
+  padding-right: 0;
+}
+td.col-cb input[type="checkbox"] {
+  cursor: pointer;
+  margin: 0;
+}
+
+/* Table Row Action Icons */
+
+.dedu-row-action {
+  /* text-align: right; */
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+}
+.dedu-row-action a {
+  display: flex;
+  justify-content: flex-end;
+}
+.dedu-action-link {
+  color: #9ca3af;
+  transition: color 0.2s;
+  text-decoration: none;
+}
+.dedu-action-link.edit:hover {
+  color: #2563eb;
+}
+.dedu-action-link.delete:hover {
+  color: #ef4444;
+}
+
+.dedu-badge-count {
+  background: #e0e7ff;
+  color: #4338ca;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+/* --- Empty table or no search result --- */
+
+.dedu-empty-state {
+  padding: 40px 20px;
+  text-align: center;
+  color: #64748b;
+}
+
+.dedu-empty-state .dashicons {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 15px;
+  color: #cbd5e1;
+}
+
+.dedu-empty-state p {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+}
+
+#dedu-no-search-results:hover,
+.dedu-no-data-static:hover {
+  background: transparent !important;
+} /* Ensure the no-results row doesn't have hover effects like normal rows */
+
+.dedu-js-paginated tbody tr {
+    display: none;
+}
+
+/* --- Status Indicators --- */
+.dedu-status-dot {
+  display: inline-block;
+  height: 10px;
+  width: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+.bg-success {
+  background-color: #10b981;
+}
+.bg-danger {
+  background-color: #ef4444;
+}
+
+/* --- Text Utility --- */
+.text-heading {
+  color: #111827;
+  font-weight: 600;
+}
+
+.text-brand {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+}
+.text-brand:hover {
+  text-decoration: underline;
+}
+
+/*
+======================================
+             TABLE FOOTER 
+======================================
+*/
+
+.dedu-table-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px 20px 15px 20px; /* Matching the table header padding */
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+}
+.dedu-table-footer-left {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.dedu-select-sm {
+  border-radius: 6px;
+  font-size: 0.6em;
+  min-width: 40px;
+}
+
+.dedu-table-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.dedu-pagination-info {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.dedu-pagination-controls .butt,
+.dedu-pagination-controls .page-num {
+  border: 1px solid #e2e8f0;
+  background: white;
+  padding: 5px 10px;
+  margin: 0 2px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.page-num.active {
+  background: #4f46e5;
+  color: white;
+  border-color: #4f46e5;
+}
+.page-num:hover:not(.active) {
+  background: #f8fafc;
+}
+
+@media only screen and (max-width: 600px) {
+  .dedu-table-toolbar {
+    align-items: flex-start;
+  }
+  .dedu-table-footer {
+    flex-direction: column-reverse;
+    row-gap: 20px;
+  }
+}
+@media only screen and (max-width: 480px) {
+  .dedu-table-toolbar {
+    flex-direction: column-reverse;
+    row-gap: 10px;
+  }
+  .dedu-toolbar-right,
+  .dedu-toolbar-left {
+    width: 100%;
+  }
+  .dedu-search-input {
+    width: 100%;
+  }
+}

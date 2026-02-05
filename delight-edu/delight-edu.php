@@ -4,27 +4,34 @@
  * Description: High-performance School Management System.
  * Version: 1.0.0
  * Author: Kingsley Ikpefan
- * Author URI:  https://wa.me/2348060719978
- * Plugin URI:  https://github.com/itksweb/wordpress-plugins/
+ * Author URI: https://wa.me/2348060719978
+ * Plugin URI: https://github.com/itksweb/wordpress-plugins/
  */
 
-if ( ! defined( 'ABSPATH' ) ) exit; // Security first
+if ( ! defined( 'ABSPATH' ) ) exit;
 
-// Autoloading (We'll set this up so we don't have to 'include' every file)
-require_once plugin_dir_path( __FILE__ ) . 'includes/Autoloader.php';
+// 1. GLOBAL CONSTANTS
+// Defined at the very top so they are available to all namespaced files immediately.
+define( 'DEDU_PATH', plugin_dir_path( __FILE__ ) );
+define( 'DEDU_URL',  plugin_dir_url( __FILE__ ) );
+define( 'DEDU_FILE', __FILE__ );
 
-require_once __DIR__ . '/includes/Autoloader.php';
+// 2. LOAD AUTOLOADER 
+// We only need to do this once.
+require_once DEDU_PATH . 'includes/Autoloader.php';
 
-// Now you can call classes directly without manual 'include' statements!
+// 3. NAMESPACES
 use DelightEDU\Database\Schema;
+use DelightEDU\Controllers\Admin\Menu;
+use DelightEDU\Controllers\Admin\PostHandler;
 
-register_activation_hook( __FILE__, [ Schema::class, 'install' ] );
+// 4. ACTIVATION HOOK
+// Moved outside the class to ensure it registers correctly with WordPress.
+register_activation_hook( DEDU_FILE, [ Schema::class, 'install' ] );
 
+// 5. MAIN PLUGIN CLASS
 final class DelightEDU {
 
-    /**
-     * Singleton Instance
-     */
     private static $instance = null;
 
     public static function instance() {
@@ -35,20 +42,17 @@ final class DelightEDU {
     }
 
     private function __construct() {
-        $this->define_constants();
         $this->init_hooks();
     }
 
-    private function define_constants() {
-        define( 'SEDU_PATH', plugin_dir_path( __FILE__ ) );
-        define( 'SEDU_URL', plugin_dir_url( __FILE__ ) );
-    }
-
     private function init_hooks() {
-        // This is where we will trigger our Database and Controller classes
-        register_activation_hook( __FILE__, [ 'SEDU\Database\Schema', 'install' ] );
+        // Initialize Admin components only when in the dashboard
+        if ( is_admin() ) {
+            new Menu();
+            new PostHandler();
+        }
     }
 }
 
-// Start the engine
+// 6. KICKSTART
 DelightEDU::instance();
